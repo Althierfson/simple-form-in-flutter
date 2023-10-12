@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:stages_form/core/format_input/cpf_formatter.dart';
 import 'package:stages_form/model/user.dart';
-import 'package:stages_form/view/form/form_address_page.dart';
 import 'package:stages_form/view/form/form_confirm_data_page.dart';
 
 class FormGraduationPage extends StatefulWidget {
