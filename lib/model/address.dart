@@ -54,7 +54,7 @@ class Address {
     if (cep == null || cep!.isEmpty) {
       return "You Have to add a discrict";
     }
-    if (cep!.isEmpty || cep!.length > 9) {
+    if (cep!.length != 9) {
       return "Formatter erro. xxxxx-xxx";
     }
     return null;

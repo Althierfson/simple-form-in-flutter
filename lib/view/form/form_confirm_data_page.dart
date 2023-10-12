@@ -36,6 +36,8 @@ class _FormConfirmDataPageState extends State<FormConfirmDataPage> {
               Text(typeOfMusicString(user.typeOfMusic ?? [])),
               Text(typeOfSportString(user.typeOfSport ?? []))
             ]),
+            buildSection(
+                "Marital Status", [Text(user.maritalStatus?.name ?? "")]),
             buildSection("Graduation", [
               Text(user.collageName ?? ""),
               Text(user.graduationYear ?? "")

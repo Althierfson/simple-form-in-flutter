@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:stages_form/core/format_input/cep_formatter.dart';
 import 'package:stages_form/core/repositories/uf_repositories.dart';
 import 'package:stages_form/model/address.dart';
@@ -17,19 +18,36 @@ class _FormAddressPageState extends State<FormAddressPage> {
   final UFRepositories ufRepositories = UFRepositories();
   final Color blue = Colors.blue[900] as Color;
 
+  late Map<String, TextEditingController> _editingControllerList;
+
   late Address address;
+  late User user;
 
   @override
   void initState() {
-    address = Address();
+    user = widget.user;
+    address = widget.user.address ?? Address();
+    _createEditingControllerList();
     super.initState();
+  }
+
+  _createEditingControllerList() {
+    _editingControllerList = {
+      "address": TextEditingController(text: address.address),
+      "district": TextEditingController(text: address.district),
+      "city": TextEditingController(text: address.city),
+      "uf": TextEditingController(text: address.uf),
+      "cep": TextEditingController(text: address.cep),
+      "number": TextEditingController(text: address.number),
+      "complement": TextEditingController(text: address.complement),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.fromLTRB(16.0, 50.0, 16.0, 100.0),
+        padding: const EdgeInsets.fromLTRB(16.0, 50.0, 16.0, 0.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,6 +61,7 @@ class _FormAddressPageState extends State<FormAddressPage> {
                 textAlign: TextAlign.left,
               ),
               TextField(
+                controller: _editingControllerList["address"],
                 decoration: InputDecoration(
                     hintText: "Address",
                     enabledBorder: UnderlineInputBorder(
@@ -58,6 +77,7 @@ class _FormAddressPageState extends State<FormAddressPage> {
                 },
               ),
               TextField(
+                controller: _editingControllerList["district"],
                 decoration: InputDecoration(
                     hintText: "District",
                     enabledBorder: UnderlineInputBorder(
@@ -78,7 +98,7 @@ class _FormAddressPageState extends State<FormAddressPage> {
                   Expanded(
                     flex: 3,
                     child: TextField(
-                      keyboardType: TextInputType.number,
+                      controller: _editingControllerList["city"],
                       decoration: InputDecoration(
                           hintText: "City",
                           enabledBorder: UnderlineInputBorder(
@@ -128,6 +148,7 @@ class _FormAddressPageState extends State<FormAddressPage> {
                 children: [
                   Expanded(
                     child: TextField(
+                      controller: _editingControllerList["cep"],
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                           hintText: "CEP",
@@ -150,6 +171,7 @@ class _FormAddressPageState extends State<FormAddressPage> {
                   ),
                   Expanded(
                     child: TextField(
+                      controller: _editingControllerList["number"],
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                           hintText: "Number",
@@ -169,7 +191,7 @@ class _FormAddressPageState extends State<FormAddressPage> {
                 ],
               ),
               TextField(
-                keyboardType: TextInputType.number,
+                controller: _editingControllerList["complement"],
                 decoration: InputDecoration(
                     hintText: "Complement",
                     enabledBorder: UnderlineInputBorder(
@@ -197,7 +219,8 @@ class _FormAddressPageState extends State<FormAddressPage> {
                               shape: const CircleBorder(),
                               backgroundColor: Colors.blue[900]),
                           onPressed: () {
-                            Navigator.pop(context);
+                            user.address = address;
+                            Navigator.pop(context, user);
                           },
                           child: const Icon(Icons.arrow_back)),
                       const SizedBox(
@@ -213,11 +236,23 @@ class _FormAddressPageState extends State<FormAddressPage> {
                             } else {
                               widget.user.address = address;
                               Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => FormPreferencesPage(
-                                            user: widget.user,
-                                          )));
+                                      context,
+                                      PageTransition(
+                                          child:
+                                              FormPreferencesPage(user: user),
+                                          type: PageTransitionType.rightToLeft,
+                                          childCurrent: widget,
+                                          duration:
+                                              const Duration(milliseconds: 500),
+                                          reverseDuration: const Duration(
+                                              milliseconds: 500)))
+                                  .then((value) {
+                                if (value is User) {
+                                  user = value;
+                                  address = value.address!;
+                                  _createEditingControllerList();
+                                }
+                              });
                             }
                           },
                           child: const Icon(Icons.arrow_forward))

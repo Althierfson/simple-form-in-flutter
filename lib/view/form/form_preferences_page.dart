@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:stages_form/model/civil_state.dart';
 import 'package:stages_form/model/type_of_music.dart';
 import 'package:stages_form/model/type_of_sport.dart';
@@ -15,8 +16,6 @@ class FormPreferencesPage extends StatefulWidget {
 }
 
 class _FormPreferencesPageState extends State<FormPreferencesPage> {
-  List<TypeOfMusic> musicItensSelected = [];
-
   late User user;
 
   @override
@@ -42,6 +41,7 @@ class _FormPreferencesPageState extends State<FormPreferencesPage> {
               textAlign: TextAlign.left,
             ),
             MultiSelectDialogField(
+              initialValue: user.typeOfMusic ?? <TypeOfMusic>[],
               items: TypeOfMusic.musicTypeList
                   .map((e) => MultiSelectItem(e, e.name))
                   .toList(),
@@ -50,7 +50,7 @@ class _FormPreferencesPageState extends State<FormPreferencesPage> {
                 user.typeOfMusic = list;
               },
               validator: (list) {
-                if (user.typeOfSport != null) {
+                if (user.typeOfMusic != null) {
                   return user.checkValidTypeOfMusic();
                 }
                 return null;
@@ -66,6 +66,7 @@ class _FormPreferencesPageState extends State<FormPreferencesPage> {
               textAlign: TextAlign.left,
             ),
             MultiSelectDialogField(
+              initialValue: user.typeOfSport ?? <TypeOfSport>[],
               items: TypeOfSport.sportTypeList
                   .map((e) => MultiSelectItem(e, e.name))
                   .toList(),
@@ -121,7 +122,7 @@ class _FormPreferencesPageState extends State<FormPreferencesPage> {
                             shape: const CircleBorder(),
                             backgroundColor: Colors.blue[900]),
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pop(context, user);
                         },
                         child: const Icon(Icons.arrow_back)),
                     const SizedBox(
@@ -136,11 +137,20 @@ class _FormPreferencesPageState extends State<FormPreferencesPage> {
                             showSnackBar("All data has to be valid");
                           } else {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => FormGraduationPage(
-                                          user: widget.user,
-                                        )));
+                                    context,
+                                    PageTransition(
+                                        child: FormGraduationPage(user: user),
+                                        type: PageTransitionType.rightToLeft,
+                                        childCurrent: widget,
+                                        duration:
+                                            const Duration(milliseconds: 500),
+                                        reverseDuration:
+                                            const Duration(milliseconds: 500)))
+                                .then((value) {
+                              if (value is User) {
+                                user = value;
+                              }
+                            });
                           }
                         },
                         child: const Icon(Icons.arrow_forward))

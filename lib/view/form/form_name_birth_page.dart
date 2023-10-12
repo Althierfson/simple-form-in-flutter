@@ -3,6 +3,7 @@ import 'package:stages_form/core/format_input/birth_formatter.dart';
 import 'package:stages_form/core/format_input/name_formatter.dart';
 import 'package:stages_form/model/user.dart';
 import 'package:stages_form/view/form/form_cpf_page.dart';
+import 'package:page_transition/page_transition.dart';
 
 class FormNameBirthPage extends StatefulWidget {
   const FormNameBirthPage({super.key});
@@ -45,8 +46,7 @@ class _FormNameBirthPageState extends State<FormNameBirthPage> {
                 decoration: InputDecoration(
                     enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                            color: Colors.blue.shade900,
-                            width: 1.0)),
+                            color: Colors.blue.shade900, width: 1.0)),
                     errorText:
                         user.fullName != null ? user.checkValidName() : null),
                 inputFormatters: [NameFormatter()],
@@ -81,8 +81,7 @@ class _FormNameBirthPageState extends State<FormNameBirthPage> {
                 decoration: InputDecoration(
                     enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                            color: Colors.blue.shade900,
-                            width: 1.0)),
+                            color: Colors.blue.shade900, width: 1.0)),
                     errorText:
                         user.birth != null ? user.checkValidBirth() : null),
                 inputFormatters: [BirthFormatter()],
@@ -117,9 +116,24 @@ class _FormNameBirthPageState extends State<FormNameBirthPage> {
                             showSnackBar("All Data has to be valid!");
                           } else {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => FormCPFPage(user: user)));
+                                    context,
+                                    PageTransition(
+                                        child: FormCPFPage(user: user),
+                                        type: PageTransitionType.rightToLeft,
+                                        childCurrent: widget,
+                                        duration:
+                                            const Duration(milliseconds: 500),
+                                        reverseDuration:
+                                            const Duration(milliseconds: 500)))
+                                .then((value) {
+                              if (value is User) {
+                                user = value;
+                                _nameController.value =
+                                    TextEditingValue(text: user.fullName!);
+                                _birthController.value =
+                                    TextEditingValue(text: user.birth!);
+                              }
+                            });
                           }
                         },
                         child: const Icon(Icons.arrow_forward))
