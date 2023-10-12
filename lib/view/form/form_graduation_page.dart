@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:stages_form/core/format_input/cpf_formatter.dart';
 import 'package:stages_form/model/user.dart';
 import 'package:stages_form/view/form/form_address_page.dart';
@@ -13,11 +14,16 @@ class FormGraduationPage extends StatefulWidget {
 }
 
 class _FormGraduationPageState extends State<FormGraduationPage> {
+  late TextEditingController _collegeController;
+  late TextEditingController _yearController;
+
   late User user;
 
   @override
   void initState() {
     user = widget.user;
+    _collegeController = TextEditingController(text: user.collageName);
+    _yearController = TextEditingController(text: user.graduationYear);
     super.initState();
   }
 
@@ -66,7 +72,7 @@ class _FormGraduationPageState extends State<FormGraduationPage> {
                             shape: const CircleBorder(),
                             backgroundColor: Colors.blue[900]),
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pop(context, user);
                         },
                         child: const Icon(Icons.arrow_back)),
                     ElevatedButton(
@@ -78,10 +84,20 @@ class _FormGraduationPageState extends State<FormGraduationPage> {
                             showSnackBar("All data has to be valid");
                           } else {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        FormConfirmDataPage(user: user)));
+                                    context,
+                                    PageTransition(
+                                        child: FormConfirmDataPage(user: user),
+                                        type: PageTransitionType.rightToLeft,
+                                        childCurrent: widget,
+                                        duration:
+                                            const Duration(milliseconds: 500),
+                                        reverseDuration:
+                                            const Duration(milliseconds: 500)))
+                                .then((value) {
+                              if (value is User) {
+                                user = value;
+                              }
+                            });
                           }
                         },
                         child: const Icon(Icons.arrow_forward))
@@ -104,6 +120,7 @@ class _FormGraduationPageState extends State<FormGraduationPage> {
       return Column(
         children: [
           TextField(
+            controller: _collegeController,
             decoration: InputDecoration(
                 hintText: "College Name",
                 enabledBorder: UnderlineInputBorder(
@@ -119,6 +136,7 @@ class _FormGraduationPageState extends State<FormGraduationPage> {
             },
           ),
           TextField(
+            controller: _yearController,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
                 hintText: "Graduation Year",

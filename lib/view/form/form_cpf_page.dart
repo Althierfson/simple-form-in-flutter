@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:stages_form/core/format_input/cpf_formatter.dart';
 import 'package:stages_form/model/user.dart';
 import 'package:stages_form/view/form/form_address_page.dart';
@@ -12,12 +13,13 @@ class FormCPFPage extends StatefulWidget {
 }
 
 class _FormCPFPageState extends State<FormCPFPage> {
-  final TextEditingController _controller = TextEditingController();
+  late TextEditingController _cpfController;
   late User user;
 
   @override
   void initState() {
     user = widget.user;
+    _cpfController = TextEditingController(text: user.cpf);
     super.initState();
   }
 
@@ -48,13 +50,12 @@ class _FormCPFPageState extends State<FormCPFPage> {
                 textAlign: TextAlign.left,
               ),
               TextField(
-                controller: _controller,
+                controller: _cpfController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                            color: Colors.blue.shade900,
-                            width: 1.0)),
+                            color: Colors.blue.shade900, width: 1.0)),
                     errorText: user.cpf != null ? user.checkValidCPF() : null),
                 inputFormatters: [CPFFormatter()],
                 onChanged: (value) {
@@ -77,7 +78,7 @@ class _FormCPFPageState extends State<FormCPFPage> {
                             shape: const CircleBorder(),
                             backgroundColor: Colors.blue[900]),
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pop(context, user);
                         },
                         child: const Icon(Icons.arrow_back)),
                     ElevatedButton(
@@ -89,10 +90,22 @@ class _FormCPFPageState extends State<FormCPFPage> {
                             showSnackBar("All data has to be valid");
                           } else {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        FormAddressPage(user: user)));
+                                    context,
+                                    PageTransition(
+                                        child: FormAddressPage(user: user),
+                                        type: PageTransitionType.rightToLeft,
+                                        childCurrent: widget,
+                                        duration:
+                                            const Duration(milliseconds: 500),
+                                        reverseDuration:
+                                            const Duration(milliseconds: 500)))
+                                .then((value) {
+                              if (value is User) {
+                                user = value;
+                                _cpfController.value =
+                                    TextEditingValue(text: user.cpf!);
+                              }
+                            });
                           }
                         },
                         child: const Icon(Icons.arrow_forward))
